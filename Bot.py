@@ -630,30 +630,30 @@ async def handle_callbacks(client, callback_query):
     user_id = str(callback_query.from_user.id)
     msg = callback_query.message
 
+    logger.info(f"CALLBACK: {data} від {user_id}")
+
     try:
-        if data == "wheel":
-            await process_spin_wheel(str(msg.chat.id), user_id, msg.reply_text)
-        elif data == "top":
-            # Видаляємо повідомлення з кнопками, щоб не дублювати топ
+        # Для всіх callback-ів, які викликають функції з відповіддю, видаляємо повідомлення з кнопками
+        if data in ["top", "horoscope", "funpoll", "character"]:
             try:
                 await msg.delete()
             except Exception as e:
                 logger.warning(f"Не вдалося видалити повідомлення з кнопками: {e}")
+
+        if data == "wheel":
+            await process_spin_wheel(str(msg.chat.id), user_id, msg.reply_text)
+        elif data == "top":
             await process_show_top_users(str(msg.chat.id), msg.reply_text, client)
         elif data == "karma":
             await process_show_karma(str(msg.chat.id), user_id, msg.reply_text, client)
         elif data == "go":
-            # Перевіряємо, чи користувач є адміністратором
             if not is_admin(callback_query.from_user):
                 await msg.reply_text("⛔️ Команда доступна лише для адміністраторів")
                 await callback_query.answer()
                 return
-            
-            # Видаляємо повідомлення користувача, якщо потрібно
             await callback_query.message.delete()
             await process_luckypoll(client)
         elif data == "character":
-            # Використовуємо ту ж логіку, що й у команді, для обмеження раз на день
             class DummyMessage:
                 def __init__(self, from_user, reply_photo, reply_text):
                     self.from_user = from_user
