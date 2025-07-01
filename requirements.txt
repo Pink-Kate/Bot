@@ -1,4 +1,4 @@
 pyrogram
 requests
-openai
-google-generativeai 
+google-generativeai
+python-dotenv
